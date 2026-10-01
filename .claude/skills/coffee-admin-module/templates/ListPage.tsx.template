@@ -1,0 +1,97 @@
+// Template: trang DANH SÁCH. Thay __Entity__ / __entity__ / __route__ và các cột.
+// Xoá dòng comment này sau khi copy vào src/pages/__Entity__s.tsx
+import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { Plus, Boxes } from "lucide-react"
+import { PageHeader } from "@/components/shared/PageHeader"
+import { SearchInput } from "@/components/shared/SearchInput"
+import { DataTable, type Column } from "@/components/shared/DataTable"
+import { StatCard } from "@/components/shared/StatCard"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { formatNumber } from "@/lib/format"
+import { __entity__s } from "@/data/__entity__s"
+import type { __Entity__ } from "@/types"
+
+export default function __Entity__s() {
+  const navigate = useNavigate()
+  const [query, setQuery] = useState("")
+  const [filter, setFilter] = useState<"all" | string>("all")
+  const debounced = useDebouncedValue(query)
+
+  const filtered = useMemo(() => {
+    const q = debounced.trim().toLowerCase()
+    return __entity__s.filter((row) => {
+      // if (filter !== "all" && row.someField !== filter) return false
+      if (!q) return true
+      return row.name.toLowerCase().includes(q)
+    })
+  }, [debounced, filter])
+
+  const summary = useMemo(
+    () => ({ total: __entity__s.length }),
+    []
+  )
+
+  const columns = useMemo<Column<__Entity__>[]>(
+    () => [
+      {
+        key: "name",
+        header: "Tên",
+        sortValue: (r) => r.name,
+        cell: (r) => <span className="font-medium">{r.name}</span>,
+      },
+      // …thêm cột: dùng sortValue để bật sort, align:"right" cho số/tiền
+    ],
+    []
+  )
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="__Nhóm menu__"
+        title="__Tiêu đề__"
+        description="__Mô tả ngắn__"
+        actions={
+          <Button size="sm">
+            <Plus className="h-4 w-4" /> Thêm mới
+          </Button>
+        }
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard label="Tổng" value={formatNumber(summary.total)} icon={Boxes} />
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <SearchInput value={query} onChange={setQuery} placeholder="Tìm kiếm…" />
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-full sm:w-52">
+            <SelectValue placeholder="Bộ lọc" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-muted-foreground sm:ml-auto">
+          {filtered.length} mục
+        </span>
+      </div>
+
+      <DataTable
+        columns={columns}
+        data={filtered}
+        getRowId={(r) => r.id}
+        onRowClick={(r) => navigate(`/__route__/${r.id}`)}
+        emptyMessage="Không tìm thấy mục phù hợp."
+      />
+    </div>
+  )
+}

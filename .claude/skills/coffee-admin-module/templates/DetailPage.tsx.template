@@ -1,0 +1,75 @@
+// Template: trang CHI TIẾT. Thay __Entity__ / __entity__ / __route__.
+// Xoá dòng comment này sau khi copy vào src/pages/__Entity__Detail.tsx
+import { Link, useParams } from "react-router-dom"
+import { ArrowLeft, Pencil } from "lucide-react"
+import { PageHeader } from "@/components/shared/PageHeader"
+import { DetailField } from "@/components/shared/DetailField"
+import { EmptyState } from "@/components/shared/EmptyState"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { __entity__ById } from "@/data/__entity__s"
+import { formatDate } from "@/lib/format"
+
+export default function __Entity__Detail() {
+  const { id = "" } = useParams()
+  const item = __entity__ById.get(id)
+
+  if (!item) {
+    return (
+      <EmptyState
+        title="Không tìm thấy dữ liệu"
+        description="Mục có thể đã bị xóa hoặc đường dẫn không đúng."
+        action={
+          <Button asChild variant="outline">
+            <Link to="/__route__">Về danh sách</Link>
+          </Button>
+        }
+      />
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <Link
+        to="/__route__"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Danh sách
+      </Link>
+
+      <PageHeader
+        title={item.name}
+        description={item.code}
+        actions={
+          <Button variant="outline" size="sm">
+            <Pencil className="h-4 w-4" /> Chỉnh sửa
+          </Button>
+        }
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        {/* Cột nội dung chính */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Thông tin</CardTitle>
+            </CardHeader>
+            <CardContent>{/* nội dung chính / bảng liên quan */}</CardContent>
+          </Card>
+        </div>
+
+        {/* Cột phụ: tóm tắt */}
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="grid grid-cols-2 gap-4 p-5">
+              <DetailField label="Mã">{item.code}</DetailField>
+              <DetailField label="Ngày tạo">
+                {formatDate(item.createdAt)}
+              </DetailField>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
